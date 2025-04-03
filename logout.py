@@ -55,53 +55,58 @@ class AccountController:
     session_list = []
 
     @staticmethod
-    def login():
+    def login_prompt():
         email = input("Enter an email: ")
-        if Credentials.verify_email(email) == None:
+        password = input("Enter a password: ")
+        
+        sesString = AccountController.login(email, password)
+        
+        print("Created new session: " + sesString)
+        
+    @staticmethod
+    def login(_email, _password):
+        if Credentials.verify_email(_email) == None:
             print("Invalid email.")
-            return
+            return "NULL"
             
-        email_hash = hashlib.sha512(email.encode("utf-8")).hexdigest()
+        email_hash = hashlib.sha512(_email.encode("utf-8")).hexdigest()
         for existing_session in AccountController.session_list:
             if existing_session.get_credentials().get_email_hash() == email_hash:
                 print("A user with this email is already signed in.")
-                return
-        
-        password = input("Enter a password: ")
-        #if...
-        
+                return "NULL"
+    
         external_ip = urllib.request.urlopen('https://ident.me').read().decode('utf8')
-        
-        # print(external_ip)
-        
-        
-        password_hash = hashlib.sha512(password.encode("utf-8")).hexdigest()
+        password_hash = hashlib.sha512(_password.encode("utf-8")).hexdigest()
         ip_hash = hashlib.sha512(external_ip.encode("utf-8")).hexdigest()
         
         cred = Credentials(email_hash, password_hash, ip_hash)
         ses = SessionToken(cred, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0", int(time.time()))
         AccountController.session_list.append(ses)
         
-        print("Created new session: " + ses.__str__())
+        return ses.__str__()
     
     @staticmethod
-    def logout():
+    def logout_prompt():
         testses = input("Enter the token for a session that is signed in: ")
+        AccountController.logout(testses)
         
+    @staticmethod
+    def logout(sesString):
         for existing_session in AccountController.session_list:
-            if existing_session == testses:
+            if existing_session == sesString:
                 AccountController.session_list.remove(existing_session)
                 print("Successfully signed out.")
-                return
+                return True
         
         print("No such user is signed in.")
+        return False
 
 if __name__ == "__main__":
     while True:
         op = input("Enter 1 to login, enter 2 to log out, or enter anything else to quit: ")
         if op == "1":
-            AccountController.login()
+            AccountController.login_prompt()
         elif op == "2":
-            AccountController.logout()
+            AccountController.logout_prompt()
         else:
             sys.exit(0)
