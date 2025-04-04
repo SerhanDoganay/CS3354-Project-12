@@ -1,6 +1,7 @@
 import unittest
 import os
 from vlm import VLM
+from logout import AccountController
 
 class TestVLM(unittest.TestCase):
 
@@ -57,6 +58,16 @@ class TestVLM(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             VLM(corrupted_image_path)
         self.assertTrue("The file at test_images/corrupted_image.jpg is not a valid image" in str(context.exception))
+        
+class TestLogout(unittest.TestCase):
+    def test_logout(self):
+        self.assertEqual(AccountController.login("fakeemail", "idcaboutthepassword"), "NULL")
+        
+        ses1 = AccountController.login("valid@email.com", "istilldon'tcareaboutthepassword")
+        self.assertNotEqual(ses1, "NULL")
+        
+        self.assertFalse(AccountController.logout("fakesessionkey"))
+        self.assertTrue(AccountController.logout(ses1))
 
 if __name__ == '__main__':
     unittest.main()
