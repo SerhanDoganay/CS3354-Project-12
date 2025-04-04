@@ -69,5 +69,61 @@ class TestLogout(unittest.TestCase):
         self.assertFalse(AccountController.logout("fakesessionkey"))
         self.assertTrue(AccountController.logout(ses1))
 
+class TestLogin(unittest.TestCase):
+    def test_login(self):
+        class TestLoginUseCase(unittest.TestCase):
+    
+    def test_login_TC1_valid(self):
+        self.assertEqual(LoginUser.validate_login_id("newuser@hmail.com"), "Login Successful")
+
+    def test_login_TC2_too_short(self):
+        self.assertEqual(LoginUser.validate_login_id("x@y.c"), "Login id does not satisfy length requirement")
+
+    def test_login_TC3_existing(self):
+        self.assertEqual(LoginUser.validate_login_id("olduser@hmail.com"), "Login id exists !!!")
+
+    def test_login_TC4_space_in_email(self):
+        self.assertEqual(LoginUser.validate_login_id("new user@hmail.com"), "Login id has space/control/special character in it")
+
+    def test_login_TC5_slash_in_email(self):
+        self.assertEqual(LoginUser.validate_login_id("some/user@hmail.com"), "Login id has space/control/special character in it")
+
+class TestPasswordValidator(unittest.TestCase):
+    def test_password_valid(self):
+        result = PasswordValidator.validate_password("abc12345")
+        self.assertEqual(result, "Password OK")
+
+    def test_password_too_short(self):
+        result = PasswordValidator.validate_password("ab12")
+        self.assertEqual(result, "Password must be at least 8 characters in length")
+
+    def test_password_space(self):
+        result = PasswordValidator.validate_password("abc 1234")
+        self.assertEqual(result, "Password cannot contain spaces")
+
+    def test_password_control_char(self):
+        pwd_with_control = "abc123" + "\t" + "xy"
+        result = PasswordValidator.validate_password(pwd_with_control)
+        self.assertEqual(result, "Password cannot contain control characters")
+
+
+class TestAccountController(unittest.TestCase):
+    def setUp(self):
+        AccountController.session_list.clear()
+
+    def test_login_logout_flow(self):
+        session_1 = AccountController.login("notAValidFormat", "abcd1234")
+        self.assertEqual(session_1, "NULL")
+
+        session_2 = AccountController.login("valid@email.com", "ab")
+        self.assertEqual(session_2, "NULL")
+
+        session_3 = AccountController.login("valid@testing.com", "abcd1234")
+        self.assertNotEqual(session_3, "NULL")
+
+        self.assertFalse(AccountController.logout("fake_token"))
+
+        self.assertTrue(AccountController.logout(session_3))
+
 if __name__ == '__main__':
     unittest.main()
