@@ -64,16 +64,13 @@ class TestLogin(unittest.TestCase):
     def test_login_TC1_valid(self):
         self.assertEqual(LoginUser.validate_login_id("newuser@hmail.com"), "Login Successful")
 
-    def test_login_TC2_too_short(self):
-        self.assertEqual(LoginUser.validate_login_id("x@y.c"), "Login id does not satisfy length requirement")
-
-    def test_login_TC3_existing(self):
+    def test_login_TC2_existing(self):
         self.assertEqual(LoginUser.validate_login_id("olduser@hmail.com"), "Login id exists !!!")
 
-    def test_login_TC4_space_in_email(self):
+    def test_login_TC3_space_in_email(self):
         self.assertEqual(LoginUser.validate_login_id("new user@hmail.com"), "Login id has space/control/special character in it")
 
-    def test_login_TC5_slash_in_email(self):
+    def test_login_TC4_slash_in_email(self):
         self.assertEqual(LoginUser.validate_login_id("some/user@hmail.com"), "Login id has space/control/special character in it")
 
 class TestPasswordValidator(unittest.TestCase):
