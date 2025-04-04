@@ -50,6 +50,55 @@ class SessionToken:
             return self.__str__() == other
         else:
             return False
+
+class LoginUser:
+    MIN_LENGTH_LOGIN_ID = 8
+    MAX_LENGTH_LOGIN_ID = 20
+    existingIDs = ["abc@abcdef.com", "def@abcdef.org", "ghi@abcdef.gov", "olduser@hmail.com"]
+    badChars = [' ', ',', '/', '\\']
+
+    @staticmethod
+    def checkLoginLength(argLoginID):
+        return LoginUser.MIN_LENGTH_LOGIN_ID <= len(argLoginID) <= LoginUser.MAX_LENGTH_LOGIN_ID
+
+    @staticmethod
+    def checkLoginExisting(argLoginID):
+        return argLoginID in LoginUser.existingIDs
+
+    @staticmethod
+    def checkLoginForBadCharacters(argLoginID):
+        for bc in LoginUser.badChars:
+            if bc in argLoginID:
+                return True
+        for c in argLoginID:
+            if ord(c) < 32:
+                return True
+        return False
+
+    @staticmethod
+    def validate_login_id(argLoginID):
+        if not LoginUser.checkLoginLength(argLoginID):
+            return "Login id does not satisfy length requirement"
+        if LoginUser.checkLoginExisting(argLoginID):
+            return "Login id exists !!!"
+        if LoginUser.checkLoginForBadCharacters(argLoginID):
+            return "Login id has space/control/special character in it"
+        return "Login Successful"
+
+class PasswordValidator:
+    @staticmethod
+    def validate_password(password):
+        if len(password) < 8:
+            return "Password must be at least 8 characters in length"
+
+        if ' ' in password:
+            return "Password cannot contain spaces"
+
+        for c in password:
+            if ord(c) < 32:
+                return "Password cannot contain control characters"
+
+        return "Password OK"
         
 class AccountController:
     session_list = []
@@ -65,17 +114,27 @@ class AccountController:
         
     @staticmethod
     def login(_email, _password):
-        if Credentials.verify_email(_email) == None:
-            print("Invalid email.")
+        validation_result = LoginUser.validate_login_id(_email)
+        if validation_result != "Login Successful":
+            print(validation_result)
             return "NULL"
-            
+
+        if Credentials.verify_email(_email) is None:
+            print("Invalid email format.")
+            return "NULL"
+
+        pwd_result = PasswordValidator.validate_password(_password)
+        if pwd_result != "Password OK":
+            print(pwd_result)
+            return "NULL"
+
         email_hash = hashlib.sha512(_email.encode("utf-8")).hexdigest()
         for existing_session in AccountController.session_list:
             if existing_session.get_credentials().get_email_hash() == email_hash:
                 print("A user with this email is already signed in.")
                 return "NULL"
-    
-        external_ip = urllib.request.urlopen('https://ident.me').read().decode('utf8')
+
+        external_ip = "127.0.0.1"  # For demonstration, skip real IP fetch
         password_hash = hashlib.sha512(_password.encode("utf-8")).hexdigest()
         ip_hash = hashlib.sha512(external_ip.encode("utf-8")).hexdigest()
         
@@ -83,7 +142,7 @@ class AccountController:
         ses = SessionToken(cred, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0", int(time.time()))
         AccountController.session_list.append(ses)
         
-        return ses.__str__()
+        return str(ses)
     
     @staticmethod
     def logout_prompt():
