@@ -77,8 +77,8 @@ class LoginUser:
 
     @staticmethod
     def validate_login_id(argLoginID):
-        if not LoginUser.checkLoginLength(argLoginID):
-            return "Login id does not satisfy length requirement"
+        #if not LoginUser.checkLoginLength(argLoginID):
+        #    return "Login id does not satisfy length requirement"
         if LoginUser.checkLoginExisting(argLoginID):
             return "Login id exists !!!"
         if LoginUser.checkLoginForBadCharacters(argLoginID):
@@ -88,6 +88,9 @@ class LoginUser:
 class PasswordValidator:
     @staticmethod
     def validate_password(password):
+        if not isinstance(password, str):
+            return "Password must be a string"
+    
         if len(password) < 8:
             return "Password must be at least 8 characters in length"
 
@@ -107,13 +110,14 @@ class AccountController:
     def login_prompt():
         email = input("Enter an email: ")
         password = input("Enter a password: ")
+        password2 = input("Re-enter password: ")
         
-        sesString = AccountController.login(email, password)
+        sesString = AccountController.login(email, password, password2)
         
         print("Created new session: " + sesString)
         
     @staticmethod
-    def login(_email, _password):
+    def login(_email, _password, _password2):
         validation_result = LoginUser.validate_login_id(_email)
         if validation_result != "Login Successful":
             print(validation_result)
@@ -126,6 +130,15 @@ class AccountController:
         pwd_result = PasswordValidator.validate_password(_password)
         if pwd_result != "Password OK":
             print(pwd_result)
+            return "NULL"
+        
+        pwd_result_2 = PasswordValidator.validate_password(_password2)
+        if pwd_result_2 != "Password OK":
+            print(pwd_result_2)
+            return "NULL"
+            
+        if _password != _password2:
+            print("Retyped password does not match original password")
             return "NULL"
 
         email_hash = hashlib.sha512(_email.encode("utf-8")).hexdigest()

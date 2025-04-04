@@ -58,16 +58,6 @@ class TestVLM(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             VLM(corrupted_image_path)
         self.assertTrue("The file at test_images/corrupted_image.jpg is not a valid image" in str(context.exception))
-        
-class TestLogout(unittest.TestCase):
-    def test_logout(self):
-        self.assertEqual(AccountController.login("fakeemail", "idcaboutthepassword"), "NULL")
-        
-        ses1 = AccountController.login("valid@email.com", "istilldon'tcareaboutthepassword")
-        self.assertNotEqual(ses1, "NULL")
-        
-        self.assertFalse(AccountController.logout("fakesessionkey"))
-        self.assertTrue(AccountController.logout(ses1))
 
 class TestLogin(unittest.TestCase):    
     def test_login_TC1_valid(self):
@@ -102,20 +92,24 @@ class TestPasswordValidator(unittest.TestCase):
         pwd_with_control = "abc123" + "\t" + "xy"
         result = PasswordValidator.validate_password(pwd_with_control)
         self.assertEqual(result, "Password cannot contain control characters")
+        
+    def test_password_exceptional(self):
+        result = PasswordValidator.validate_password(5)
+        self.assertEqual(result, "Password must be a string")
 
 
 class TestAccountController(unittest.TestCase):
     def setUp(self):
         AccountController.session_list.clear()
 
-    def test_logout_flow(self):
-        session_1 = AccountController.login("notAValidFormat", "abcd1234")
+    def test_login_logout_flow(self):
+        session_1 = AccountController.login("notAValidFormat", "abcd1234", "abcd1234")
         self.assertEqual(session_1, "NULL")
 
-        session_2 = AccountController.login("valid@email.com", "ab")
+        session_2 = AccountController.login("valid@email.com", "ab", "ab")
         self.assertEqual(session_2, "NULL")
 
-        session_3 = AccountController.login("valid@testing.com", "abcd1234")
+        session_3 = AccountController.login("valid@testing.com", "abcd1234", "abcd1234")
         self.assertNotEqual(session_3, "NULL")
 
         self.assertFalse(AccountController.logout("fake_token")) # Invalid case
