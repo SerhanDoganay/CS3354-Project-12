@@ -1,7 +1,7 @@
 import unittest
 import os
 from vlm import VLM
-from logout import AccountController
+from logout import AccountController, LoginUser, PasswordValidator
 
 class TestVLM(unittest.TestCase):
 
