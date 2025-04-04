@@ -69,10 +69,7 @@ class TestLogout(unittest.TestCase):
         self.assertFalse(AccountController.logout("fakesessionkey"))
         self.assertTrue(AccountController.logout(ses1))
 
-class TestLogin(unittest.TestCase):
-    def test_login(self):
-        class TestLoginUseCase(unittest.TestCase):
-    
+class TestLogin(unittest.TestCase):    
     def test_login_TC1_valid(self):
         self.assertEqual(LoginUser.validate_login_id("newuser@hmail.com"), "Login Successful")
 
@@ -111,7 +108,7 @@ class TestAccountController(unittest.TestCase):
     def setUp(self):
         AccountController.session_list.clear()
 
-    def test_login_logout_flow(self):
+    def test_logout_flow(self):
         session_1 = AccountController.login("notAValidFormat", "abcd1234")
         self.assertEqual(session_1, "NULL")
 
@@ -121,9 +118,11 @@ class TestAccountController(unittest.TestCase):
         session_3 = AccountController.login("valid@testing.com", "abcd1234")
         self.assertNotEqual(session_3, "NULL")
 
-        self.assertFalse(AccountController.logout("fake_token"))
+        self.assertFalse(AccountController.logout("fake_token")) # Invalid case
+        
+        self.assertFalse(AccountController.logout(5)) # Exceptional case
 
-        self.assertTrue(AccountController.logout(session_3))
+        self.assertTrue(AccountController.logout(session_3)) # Valid case
 
 if __name__ == '__main__':
     unittest.main()
