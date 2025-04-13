@@ -3,10 +3,11 @@ from google.genai import types
 import PIL.Image
 import os
 
-API_KEY = "AIzaSyDz38dcPtjK40Dar3JqyTRpGrGhQBUfrp0"
-
 class VLM:
     def __init__(self, image_path):
+        with open("private/vlm.key", "r") as file:
+            API_KEY = file.readline()
+    
         self.image_path = image_path
         self.validate_image_path()
         self.client = genai.Client(api_key=API_KEY)
