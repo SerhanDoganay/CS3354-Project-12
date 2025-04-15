@@ -97,9 +97,6 @@ class TestPasswordValidator(unittest.TestCase):
 
 
 class TestAccountController(unittest.TestCase):
-    def setUp(self):
-        AccountController.session_list.clear()
-
     def test_login_logout_flow(self):
         session_1 = AccountController.login("notAValidFormat", "abcd1234", "abcd1234")
         self.assertEqual(session_1, "NULL")

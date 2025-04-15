@@ -1,40 +1,58 @@
 import firebase_admin
 from firebase_admin import db, credentials
+from credentials import Credentials, SessionToken
 
 class DatabaseManager:
     initialized = False
 
     @staticmethod
     def firebase_init():
+        # firebase_init should not be called by the other modules; the database manager is responsible for initializing itself
         if not DatabaseManager.initialized:
             cred = credentials.Certificate("private/firebase.json")
             firebase_admin.initialize_app(cred, { "databaseURL": "https://betterchefai-default-rtdb.firebaseio.com/" })
             DatabaseManager.initialized = True
     
     @staticmethod
-    def add_session():
+    def add_session(ses):
+        print(ses)
         DatabaseManager.firebase_init()
 
+        cred = ses.get_credentials()
+
+        sessions_ref = db.reference("/sessions")
+        session_ref = sessions_ref.child(str(ses))
+        session_ref.set({"raw_credentials" : { "email_hash": cred.email_hash, "password_hash": cred.password_hash, "ip_hash": cred.ip_hash }, "user_agent": ses.user_agent.decode("utf-8"), "timestamp": int.from_bytes(ses.timestamp, byteorder='little')})
+    
+    @staticmethod
+    def remove_session(seskey):
+        DatabaseManager.firebase_init()
+        
+        sessions_ref = db.reference("/sessions")
+        session_ref = sessions_ref.child(seskey)
+        
+        if session_ref.get() is None:
+            # print("Not found!")
+            return False
+        else:
+            # print("Found!")
+            session_ref.delete()
+            return True
+            
+    @staticmethod
+    def has_email(emailhash):
+        DatabaseManager.firebase_init()
+        
         sessions_ref = db.reference("/sessions")
         sessions_data = sessions_ref.get()
         
-        session_count_ref = sessions_ref.child("count")
-        
-        # Does the "sessions" field even exist?
-        if sessions_data is None:
-            # Initialize data
-            session_count_ref.set(0)
+        if sessions_data and isinstance(sessions_data, dict):
+            for key, value in sessions_data.items():
+                emaildata = sessions_ref.child(key).child("raw_credentials/email_hash").get()
+                if emaildata == emailhash:
+                    return True
+        else:
+            # print("No data or not a dict")
+            return False
             
-        # Increment the session count
-        session_count = session_count_ref.get()
-        session_count += 1
-        session_count_ref.set(session_count)
-        
-        # Push a new session
-        sessions_ref.push({ "user" + str(session_count) : session_count })
-    
-# firebase_init should not be called by the other modules; the database manager is responsible for initializing itself
-
-if __name__ == "__main__":
-    # Test
-    DatabaseManager.add_session()
+        return False
