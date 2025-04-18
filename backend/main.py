@@ -5,27 +5,52 @@ from vlm import VLM
 from logout import AccountController, LoginUser, PasswordValidator
 from input import process_ingredient_input
 import uvicorn
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # or ["http://localhost:3000"] for more control
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 class LoginData(BaseModel):
-    email: str
+    username: str
     password: str
-    password2: str
-    
+
 class LogoutData(BaseModel):
     ses: str
 
 class Recipe(BaseModel):
     image_path: str
 
+class SignupData(BaseModel):
+    email: str
+    username: str
+    password: str
+    password2: str
+
+@app.post("/signup")
+def signup(data: SignupData):
+    print("Signup data received:", data)
+    account_controller = AccountController()
+    result = account_controller.signup(data.email, data.password, data.password2)
+    if result != "NULL":
+        return {"message": "Signup successful"}
+    return {"message": "Signup failed"}
+
+
 @app.post("/login")
 def login(data: LoginData):
+    print("Login data received:", data)
     account_controller = AccountController()
-    if account_controller.login(data.email, data.password, data.password2) != "NULL":
+    if account_controller.login(data.username, data.password) != "NULL":
         return {"message": "Login successful"}
-    else:
-        return {"message": "Invalid username or password"}
+    return {"message": "Invalid username or password"}
+
 
 @app.post("/logout")
 def logout(data: LogoutData):

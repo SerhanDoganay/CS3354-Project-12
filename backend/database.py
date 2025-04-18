@@ -14,6 +14,33 @@ class DatabaseManager:
             DatabaseManager.initialized = True
     
     @staticmethod
+    def add_user(email_hash, password_hash):
+        DatabaseManager.firebase_init()
+        
+        users_ref = db.reference("/users")
+        
+        # Check if user already exists
+        if users_ref.child(email_hash).get() is not None:
+            return False  # User already exists
+
+        # Create new user
+        users_ref.child(email_hash).set({
+            "password_hash": password_hash
+        })
+        
+        return True
+
+    @staticmethod
+    def user_exists(email_hash):
+        DatabaseManager.firebase_init()
+        return db.reference("/users").child(email_hash).get() is not None
+
+    def get_password_hash(email_hash):
+        DatabaseManager.firebase_init()
+        return db.reference("/users").child(email_hash).child("password_hash").get()
+
+
+    @staticmethod
     def add_session(ses):
         print(ses)
         DatabaseManager.firebase_init()

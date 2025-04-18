@@ -20,6 +20,8 @@ const LoginPage = () => {
     confirmPassword: ''
   });
 
+  const endpoint = 'http://127.0.0.1:8000'; 
+
   const handleLoginClick = () => {
     if (!showLoginForm) {
       setIsLoginClicked(true);
@@ -29,32 +31,39 @@ const LoginPage = () => {
       }, 500);
       return;
     }
-    
+  
     setLoading(true);
     setIsLoginClicked(true);
-    
-    setTimeout(() => {
+  
+    fetch(`${endpoint}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: formState.username,
+        password: formState.confirmPassword // assuming you're reusing confirmPassword as the login field
+      }),
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message === "Login successful") {
+        setCurrentPage('main');
+      } else {
+        alert("Invalid login. Try again.");
+      }
+    })
+    .catch(err => {
+      console.error("Login error:", err);
+      alert("Something went wrong logging in.");
+    })
+    .finally(() => {
       setLoading(false);
-      setCurrentPage('main');
-    }, 1500);
+    });
   };
+  
 
   const [passwordError, setPasswordError] = useState(false);
 
   const handleSignUpClick = () => {
-    if (showSignUpForm) {
-      // Check if passwords match
-      if (formState.password !== formState.confirmPassword) {
-        setPasswordError(true);
-        // Hide error message after 3 seconds
-        setTimeout(() => {
-          setPasswordError(false);
-        }, 3000);
-        return;
-      }
-      setPasswordError(false);
-    }
-
     if (!showSignUpForm) {
       setIsSignUpClicked(true);
       setTimeout(() => {
@@ -63,15 +72,38 @@ const LoginPage = () => {
       }, 500);
       return;
     }
-    
+  
     setLoading(true);
     setIsSignUpClicked(true);
-    
-    setTimeout(() => {
-      setLoading(false);
-      setCurrentPage('main');
-    }, 1500);
+    console.log("hiiiiiii")
+  
+    fetch(`${endpoint}/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: formState.email,
+        username: formState.username,
+        password: formState.password,
+        password2: formState.confirmPassword,
+      }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.message === "Signup successful") {
+          setCurrentPage('main');
+        } else {
+          alert("Signup failed. Try a different email or username.");
+        }
+      })
+      .catch(err => {
+        console.error("Signup error:", err);
+        alert("Something went wrong during signup.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
+  
   const errorMessageStyle = {
     position: 'fixed',
     top: '20px',
