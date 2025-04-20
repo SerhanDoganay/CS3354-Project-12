@@ -45,8 +45,9 @@ const LoginPage = () => {
     })
     .then(res => res.json())
     .then(data => {
-      if (data.message === "Login successful") {
+      if (!data.message.startsWith("ERROR: ")) {
         setCurrentPage('main');
+		document.cookie = 'ses=' + data.message
       } else {
         alert(data.message);
       }
@@ -101,8 +102,9 @@ const LoginPage = () => {
 			})
 			.then(res => res.json())
 			.then(data => {
-				if (data.message === "Login successful") {
+				if (!data.message.startsWith("ERROR: ")) {
 					setCurrentPage('main');
+					document.cookie = 'ses=' + data.message
 				} else {
 					alert("Invalid login. Try again.");
 				}

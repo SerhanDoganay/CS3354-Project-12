@@ -46,9 +46,7 @@ def login(data: LoginData):
     print("Login data received:", data)
     account_controller = AccountController()
     result = account_controller.login(data.username, data.password)
-    if result.startswith("ERROR: "):
-        return {"message": result}
-    return {"message": "Login successful"}
+    return {"message": result}
 
 
 @app.post("/logout")
