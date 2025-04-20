@@ -90,6 +90,21 @@ class DatabaseManager:
         user_ret.active_session = user_data.child("active_session").get()
         
         return user_ret
+        
+    @staticmethod
+    def get_username_from_session(seskey):
+        DatabaseManager.firebase_init()
+        
+        users_ref = db.reference("/users")
+        users_data = users_ref.get()
+        
+        if users_data and isinstance(users_data, dict):
+            for key, value in users_data.items():
+                sessiondata = users_ref.child(key).child("active_session").get()
+                if sessiondata == seskey:
+                    return key
+            
+        return "ERROR: No user with the associated session exists"
 
     @staticmethod
     def add_session(ses):
@@ -141,5 +156,10 @@ class DatabaseManager:
     def has_username(username):
         DatabaseManager.firebase_init()
         return db.reference("/users").child(username).get() is not None
+        
+    @staticmethod
+    def has_session(seskey):
+        DatabaseManager.firebase_init()
+        return db.reference("/sessions").child(seskey).get() is not None
     
         

@@ -23,10 +23,28 @@ const LoginPage = () => {
   const endpoint = 'http://127.0.0.1:8000'; 
 
   const handleLoginClick = () => {
-    if (!showLoginForm) {
+    if (!showLoginForm) {	
       setIsLoginClicked(true);
       setTimeout(() => {
-        setShowLoginForm(true);
+		var session = window.getCookieValue("ses")
+	    if (session) {
+			fetch(`${endpoint}/validatesession`, {
+			  method: 'POST',
+			  headers: { 'Content-Type': 'application/json' },
+			  body: JSON.stringify({
+				  ses: session
+			  })
+			})
+			.then(res => res.json())
+			.then(data => {
+			  if (data.valid) {
+			    setCurrentPage('main');
+			  }
+			});
+	    }
+		else {
+          setShowLoginForm(true);
+		}
         setIsLoginClicked(false);
       }, 500);
       return;
@@ -530,7 +548,7 @@ const LoginPage = () => {
       <div className="w-full mt-auto">
           <img src={bannerPNG} alt="Banner" className="w-full h-auto" style={{ objectFit: 'cover' }} />
         </div>
-    </div>
+	</div>
   );
   
 };

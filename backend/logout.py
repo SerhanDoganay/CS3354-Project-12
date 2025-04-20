@@ -140,6 +140,10 @@ class AccountController:
         
         print("No such user is signed in.")
         return False
+        
+    @staticmethod
+    def validate_session(sesString):
+        return DatabaseManager.has_session(sesString)
 
 if __name__ == "__main__":
     while True:

@@ -61,6 +61,11 @@ def logout(data: LogoutData):
 def get_recipe(data: Recipe):
     vlm_instance = VLM(Recipe.image_path)
     return {"recipe": vlm_instance.recipe}
+    
+@app.post("/validatesession")
+def validate_session(data: LogoutData):
+    account_controller = AccountController()
+    return {"valid": account_controller.validate_session(data.ses)}
 
 @app.get("/")
 def get_headers(response: Response):
