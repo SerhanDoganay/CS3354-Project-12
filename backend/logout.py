@@ -1,6 +1,5 @@
 import base64
-from credentials import Credentials, SessionToken
-from database import DatabaseManager
+from database import Session, User, DatabaseManager
 import hashlib
 import sys
 import time
@@ -9,16 +8,11 @@ import urllib.request
 class LoginUser:
     MIN_LENGTH_LOGIN_ID = 8
     MAX_LENGTH_LOGIN_ID = 20
-    existingIDs = ["abc@abcdef.com", "def@abcdef.org", "ghi@abcdef.gov", "olduser@hmail.com"]
     badChars = [' ', ',', '/', '\\']
 
     @staticmethod
     def checkLoginLength(argLoginID):
         return LoginUser.MIN_LENGTH_LOGIN_ID <= len(argLoginID) <= LoginUser.MAX_LENGTH_LOGIN_ID
-
-    @staticmethod
-    def checkLoginExisting(argLoginID):
-        return argLoginID in LoginUser.existingIDs
 
     @staticmethod
     def checkLoginForBadCharacters(argLoginID):
@@ -32,10 +26,6 @@ class LoginUser:
 
     @staticmethod
     def validate_login_id(argLoginID):
-        #if not LoginUser.checkLoginLength(argLoginID):
-        #    return "Login id does not satisfy length requirement"
-        if LoginUser.checkLoginExisting(argLoginID):
-            return "Login id exists !!!"
         if LoginUser.checkLoginForBadCharacters(argLoginID):
             return "Login id has space/control/special character in it"
         return "Login Successful"
@@ -70,77 +60,64 @@ class AccountController:
         print("Created new session: " + sesString)
     
     @staticmethod
-    def signup(email, password, password2):
-        if LoginUser.checkLoginExisting(email):
-            print("Email already exists")
-            return "NULL"
-
-        if Credentials.verify_email(email) is None:
-            print("Invalid email format")
-            return "NULL"
+    def signup(email, username, password, password2):
+        validation_result = LoginUser.validate_login_id(username)
+        if validation_result != "Login Successful":
+            return "ERROR: " + validation_result
+    
+        if User.verify_email(email) is None:
+            return "ERROR: Invalid email format"
 
         if password != password2:
-            print("Passwords do not match")
-            return "NULL"
+            return "ERROR: Passwords do not match"
 
         pwd_result = PasswordValidator.validate_password(password)
         if pwd_result != "Password OK":
-            print(pwd_result)
-            return "NULL"
+            return "ERROR: " + pwd_result
 
         email_hash = hashlib.sha512(email.encode("utf-8")).hexdigest()
         password_hash = hashlib.sha512(password.encode("utf-8")).hexdigest()
+        
+        new_user = User(username, email_hash, password_hash)
 
         # Save the user in the DB
-        if not DatabaseManager.add_user(email_hash, password_hash):
-            print("User already exists in DB")
-            return "NULL"
-
-        print("Signup successful for:", email)
-        return "OK"
-
+        res = DatabaseManager.add_user(new_user)
+        return res
         
     @staticmethod
     def login(_username, _password):
         # Step 1: Validate the username (assuming you have a method for this)
         validation_result = LoginUser.validate_login_id(_username)
         if validation_result != "Login Successful":
-            print(validation_result)
-            return "NULL"
+            return "ERROR: " + validation_result
 
         # Step 2: Validate the password
         pwd_result = PasswordValidator.validate_password(_password)
         if pwd_result != "Password OK":
-            print(pwd_result)
-            return "NULL"
+            return "ERROR: " + pwd_result
 
-        # Step 3: Hash the username to use as the identifier
-        username_hash = hashlib.sha512(_username.encode("utf-8")).hexdigest()
+        # Step 3: Verify if the username exists in the database
+        if not DatabaseManager.has_username(_username):
+            return "ERROR: Username does not exist"
 
-        # Step 4: Verify if the username exists in the database
-        if not DatabaseManager.user_exists(username_hash):
-            print("Username does not exist.")
-            return "NULL"
-
-        # Step 5: Hash the provided password and verify it
+        # Step 4: Hash the provided password and verify it
         password_hash = hashlib.sha512(_password.encode("utf-8")).hexdigest()
 
-        # Step 6: Retrieve the stored password hash for comparison (assuming you store the password hash)
-        stored_password_hash = DatabaseManager.get_password_hash(username_hash)
-        if stored_password_hash != password_hash:
-            print("Incorrect password.")
-            return "NULL"
+        # Step 5: Retrieve the stored password hash for comparison (assuming you store the password hash)
+        user = DatabaseManager.get_user(_username)
+        if user.password_hash != password_hash:
+            return "ERROR: Incorrect password"
 
-        # Step 7: Generate session token
+        # Step 6: Generate session token
         external_ip = "127.0.0.1"  # Normally, you'd fetch the user's real IP here
         ip_hash = hashlib.sha512(external_ip.encode("utf-8")).hexdigest()
 
-        # Create a credentials object with username hash and password hash
-        cred = Credentials(username_hash, password_hash, ip_hash)
-        ses = SessionToken(cred, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0", int(time.time()))
+        # Create a session
+        ses = Session(ip_hash, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0", int(time.time()))
         
         # Save session token in the database
-        DatabaseManager.add_session(ses)
+        user.set_session(ses)
+        DatabaseManager.update_user(user)
 
         # Return the session token as a string
         return str(ses)

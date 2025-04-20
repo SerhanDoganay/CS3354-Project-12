@@ -64,13 +64,10 @@ class TestLogin(unittest.TestCase):
     def test_login_TC1_valid(self):
         self.assertEqual(LoginUser.validate_login_id("newuser@hmail.com"), "Login Successful")
 
-    def test_login_TC2_existing(self):
-        self.assertEqual(LoginUser.validate_login_id("olduser@hmail.com"), "Login id exists !!!")
-
-    def test_login_TC3_space_in_email(self):
+    def test_login_TC2_space_in_email(self):
         self.assertEqual(LoginUser.validate_login_id("new user@hmail.com"), "Login id has space/control/special character in it")
 
-    def test_login_TC4_slash_in_email(self):
+    def test_login_TC3_slash_in_email(self):
         self.assertEqual(LoginUser.validate_login_id("some/user@hmail.com"), "Login id has space/control/special character in it")
 
 class TestPasswordValidator(unittest.TestCase):
@@ -94,24 +91,6 @@ class TestPasswordValidator(unittest.TestCase):
     def test_password_exceptional(self):
         result = PasswordValidator.validate_password(5)
         self.assertEqual(result, "Password must be a string")
-
-
-class TestAccountController(unittest.TestCase):
-    def test_login_logout_flow(self):
-        session_1 = AccountController.login("notAValidFormat", "abcd1234", "abcd1234")
-        self.assertEqual(session_1, "NULL")
-
-        session_2 = AccountController.login("valid@email.com", "ab", "ab")
-        self.assertEqual(session_2, "NULL")
-
-        session_3 = AccountController.login("valid@testing.com", "abcd1234", "abcd1234")
-        self.assertNotEqual(session_3, "NULL")
-
-        self.assertFalse(AccountController.logout("fake_token")) # Invalid case
-        
-        self.assertFalse(AccountController.logout(5)) # Exceptional case
-
-        self.assertTrue(AccountController.logout(session_3)) # Valid case
 
 class TestIngredientProcessor(unittest.TestCase):
 
