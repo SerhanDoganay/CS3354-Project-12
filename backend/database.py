@@ -31,13 +31,13 @@ class DatabaseManager:
         return True
 
     @staticmethod
-    def user_exists(email_hash):
+    def user_exists(user_hash):
         DatabaseManager.firebase_init()
-        return db.reference("/users").child(email_hash).get() is not None
+        return db.reference("/users").child(user_hash).get() is not None
 
-    def get_password_hash(email_hash):
+    def get_password_hash(user_hash):
         DatabaseManager.firebase_init()
-        return db.reference("/users").child(email_hash).child("password_hash").get()
+        return db.reference("/users").child(user_hash).child("password_hash").get()
 
 
     @staticmethod

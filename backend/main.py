@@ -24,9 +24,11 @@ class LoginData(BaseModel):
 class LogoutData(BaseModel):
     ses: str
 
-class Recipe(BaseModel):
+class Ingredients(BaseModel):
     image_path: str
 
+class Recipe(BaseModel):
+    ingredients: list[str]
 class SignupData(BaseModel):
     email: str
     username: str
@@ -60,10 +62,17 @@ def logout(data: LogoutData):
     else:
         return {"message": "Logout failed"}
 
+@app.post("/ingredients")
+def get_ingredients(data: Recipe):
+    vlm_instance = VLM()
+    ingredients = vlm_instance.get_ingredients(data.image_path)
+    return {"ingredients": ingredients}
+
 @app.post("/recipe")
 def get_recipe(data: Recipe):
-    vlm_instance = VLM(Recipe.image_path)
-    return {"recipe": vlm_instance.recipe}
+    vlm_instance = VLM()
+    recipe = vlm_instance.get_recipe(data.ingredients)
+    return {"recipe": recipe}
 
 @app.get("/")
 def get_headers(response: Response):

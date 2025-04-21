@@ -3,19 +3,17 @@ from google.genai import types
 import PIL.Image
 import os
 
+# image --> ingredients --> recipe 
+# users can also manually add more ingredients
+
+ingredient_prompt = """Given this image, identify all the ingredients. Provide the ingredients in a list format. If this image does not contain food, respond with 'This image does not contain food.'"""
+recipe_prompt = """Given these ingredients, what is a recipe I can make? Give a short description of the food and the steps to make it."""
 class VLM:
-    def __init__(self, image_path):
-        with open("private/vlm.key", "r") as file:
-            API_KEY = file.readline()
-    
-        self.image_path = image_path
-        self.validate_image_path()
+    def __init__(self):
+        API_KEY = "AIzaSyDz38dcPtjK40Dar3JqyTRpGrGhQBUfrp0"
+
         self.client = genai.Client(api_key=API_KEY)
-        self.image = PIL.Image.open(image_path)
-
-        self.recipe = self.get_recipe("""Given this image, identify all the ingredients and their rough quantities. 
-                                      If this image does not contain food, respond with 'This image does not contain food.'""")
-
+        
     def validate_image_path(self):
         if not self.image_path or not isinstance(self.image_path, str):
             raise ValueError("Image path is empty or not a string.")
@@ -33,14 +31,19 @@ class VLM:
         except (IOError, PIL.UnidentifiedImageError):
             raise ValueError(f"The file at {self.image_path} is not a valid image.")
 
-    def get_recipe(self, prompt):
-        ingredients = self.client.models.generate_content(model="gemini-2.0-flash", contents=[prompt, self.image])
+    def get_ingredients(self, image_path):
+        self.image_path = image_path
+        self.validate_image_path()
+        self.image = PIL.Image.open(image_path)
+
+        ingredients = self.client.models.generate_content(model="gemini-2.0-flash", contents=[ingredient_prompt, self.image])
         ingredients = ingredients.text
 
-        if "This image does not contain food." in ingredients:
-            raise ValueError("The provided image does not contain food.")
+        return ingredients
+
+    def get_recipe(self, ingredients):
         
         self.chat = self.client.chats.create(model="gemini-2.0-flash")
-        recipe = self.chat.send_message(f"Given these ingredients: {ingredients}, what is a recipe I can make?")
+        recipe = self.chat.send_message(f"{recipe_prompt}: {ingredients}")
 
         return recipe.text
