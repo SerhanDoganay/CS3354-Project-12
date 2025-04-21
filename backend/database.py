@@ -81,16 +81,6 @@ class DatabaseManager:
         return "Signup successful"
         
     @staticmethod
-<<<<<<< HEAD
-    def user_exists(user_hash):
-        DatabaseManager.firebase_init()
-        return db.reference("/users").child(user_hash).get() is not None
-
-    def get_password_hash(user_hash):
-        DatabaseManager.firebase_init()
-        return db.reference("/users").child(user_hash).child("password_hash").get()
-
-=======
     def get_user(username):
         DatabaseManager.firebase_init()
         
@@ -115,7 +105,6 @@ class DatabaseManager:
                     return key
             
         return "ERROR: No user with the associated session exists"
->>>>>>> 88426423710ecf8f7b9cf1777364641bd22ded0d
 
     @staticmethod
     def add_session(ses):
