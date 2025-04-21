@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, Response
+from fastapi import FastAPI, Depends, Response, UploadFile, File, Form
 from pydantic import BaseModel
 from typing import Optional
 from vlm import VLM
@@ -6,6 +6,7 @@ from logout import AccountController, LoginUser, PasswordValidator
 from input import process_ingredient_input
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
 
@@ -60,9 +61,15 @@ def logout(data: LogoutData):
         return {"message": "Logout failed"}
 
 @app.post("/ingredients")
-def get_ingredients(data: Recipe):
+async def get_ingredients(image: UploadFile = File(...)):
+    file_path = f"uploads/{image.filename}"
+    
+    contents = await image.read()
+    with open(file_path, "wb") as f:
+        f.write(contents)
+    
     vlm_instance = VLM()
-    ingredients = vlm_instance.get_ingredients(data.image_path)
+    ingredients = vlm_instance.get_ingredients(file_path)
     return {"ingredients": ingredients}
 
 @app.post("/recipe")
