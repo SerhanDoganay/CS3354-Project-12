@@ -23,10 +23,28 @@ const LoginPage = () => {
   const endpoint = 'http://127.0.0.1:8000'; 
 
   const handleLoginClick = () => {
-    if (!showLoginForm) {
+    if (!showLoginForm) {	
       setIsLoginClicked(true);
       setTimeout(() => {
-        setShowLoginForm(true);
+		var session = window.getCookieValue("ses")
+	    if (session) {
+			fetch(`${endpoint}/validatesession`, {
+			  method: 'POST',
+			  headers: { 'Content-Type': 'application/json' },
+			  body: JSON.stringify({
+				  ses: session
+			  })
+			})
+			.then(res => res.json())
+			.then(data => {
+			  if (data.valid) {
+			    setCurrentPage('main');
+			  }
+			});
+	    }
+		else {
+          setShowLoginForm(true);
+		}
         setIsLoginClicked(false);
       }, 500);
       return;
@@ -45,10 +63,11 @@ const LoginPage = () => {
     })
     .then(res => res.json())
     .then(data => {
-      if (data.message === "Login successful") {
+      if (!data.message.startsWith("ERROR: ")) {
         setCurrentPage('main');
+		document.cookie = 'ses=' + data.message
       } else {
-        alert("Invalid login. Try again.");
+        alert(data.message);
       }
     })
     .catch(err => {
@@ -90,9 +109,30 @@ const LoginPage = () => {
       .then(res => res.json())
       .then(data => {
         if (data.message === "Signup successful") {
-          setCurrentPage('main');
+          // setCurrentPage('main');
+			fetch(`${endpoint}/login`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					username: formState.username,
+					password: formState.password
+				}),
+			})
+			.then(res => res.json())
+			.then(data => {
+				if (!data.message.startsWith("ERROR: ")) {
+					setCurrentPage('main');
+					document.cookie = 'ses=' + data.message
+				} else {
+					alert("Invalid login. Try again.");
+				}
+			})
+			.catch(err => {
+				console.error("Login error:", err);
+				alert("Something went wrong logging in.");
+			});
         } else {
-          alert("Signup failed. Try a different email or username.");
+          alert(data.message);
         }
       })
       .catch(err => {
@@ -276,7 +316,7 @@ const LoginPage = () => {
             <div style={{ position: 'relative' }}>
             <input 
               type="password"
-              placeholder="Confirm Password"
+              placeholder="Password"
               value={formState.confirmPassword}
               onChange={(e) => {
                 setFormState({...formState, confirmPassword: e.target.value});
@@ -508,7 +548,7 @@ const LoginPage = () => {
       <div className="w-full mt-auto">
           <img src={bannerPNG} alt="Banner" className="w-full h-auto" style={{ objectFit: 'cover' }} />
         </div>
-    </div>
+	</div>
   );
   
 };

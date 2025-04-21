@@ -4,6 +4,17 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>React App</title>
+	<script>
+	function getCookieValue(name) 
+    {
+      const regex = new RegExp(`(^| )${name}=([^;]+)`)
+      const match = document.cookie.match(regex)
+      if (match) {
+        return match[2]
+      }
+	}
+	document.cookie = "SameSite=Strict"
+	</script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
