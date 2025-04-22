@@ -11,6 +11,7 @@ import bananaBreadImage from './img/bbread.jpg';
 import shrimpSkilletImage from './img/ss.jpg';
 import AccountSettings from './AccountSettings.tsx'; // Add this import
 import CameraDetection from './CameraDetection.tsx';
+import LoginPage from './LoginPage.js';
 // updated
 
 import bannerPNG from './kitchenBanner.png';
@@ -21,36 +22,14 @@ const colors = {
   buttonLight: '#D3D3C7',
 };
 
+const endpoint = 'http://127.0.0.1:8000'; 
+
 // Add function to get cookie value
 const getCookieValue = (name) => {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) return parts.pop().split(';').shift();
   return null;
-};
-
-// Add logout function
-const handleLogout = async () => {
-  try {
-    const sessionString = window.getCookieValue ? window.getCookieValue("ses") : getCookieValue("ses");
-    
-    const response = await fetch('/logout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ ses: sessionString }),
-    });
-
-    if (response.ok) {
-      // Redirect to login page or refresh the page
-      window.location.href = '/login';
-    } else {
-      console.error('Logout failed');
-    }
-  } catch (error) {
-    console.error('Error during logout:', error);
-  }
 };
 
 const recipes = [
@@ -126,6 +105,30 @@ const GenerateRecipesPage: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [clicked, setClicked] = useState(false);
   const [isLogoActive, setIsLogoActive] = useState(false);
+  
+  // Add logout function
+  const handleLogout = async () => {
+    try {
+      const sessionString = window.getCookieValue ? window.getCookieValue("ses") : getCookieValue("ses");
+      
+      const response = await fetch(`${endpoint}/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ses: sessionString }),
+      });
+  
+      if (response.ok) {
+        // Redirect to login page or refresh the page
+        setCurrentPage('login');
+      } else {
+        console.error('Logout failed');
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
 
   const handleButtonClick = () => {
     setClicked(true);
@@ -200,6 +203,9 @@ const GenerateRecipesPage: React.FC = () => {
   };
   if (currentPage === 'settings') {
     return <AccountSettings onBack={() => setCurrentPage('recipes')} />;
+  }
+  if (currentPage === 'login') {
+    return <LoginPage />;
   }
 
   return (
