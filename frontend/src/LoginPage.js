@@ -1,13 +1,15 @@
 import { AlertCircle } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
-import { Camera, ChevronRight, User, Lock, Loader2, ArrowRight, Mail, UserPlus } from 'lucide-react';
+import { Camera, ChevronRight, User, Lock, Loader2, ArrowRight, Mail, UserPlus, RefreshCw } from 'lucide-react';
 import './LoginPage.css'
 import GenerateRecipesPage from './GenRecipesPage.tsx';
+import ResetPasswordPage from './ResetPasswordPage'; // Import the new ResetPasswordPage component
 import bannerPNG from './kitchenBanner.png';
 
 const LoginPage = () => {
   const [isLoginClicked, setIsLoginClicked] = useState(false);
   const [isSignUpClicked, setIsSignUpClicked] = useState(false);
+  const [isResetClicked, setIsResetClicked] = useState(false);
   const [currentPage, setCurrentPage] = useState('login');
   const [isHovered, setIsHovered] = useState(null);
   const [showLoginForm, setShowLoginForm] = useState(false);
@@ -79,6 +81,14 @@ const LoginPage = () => {
     });
   };
   
+  // New function to handle reset password navigation
+  const handleResetPasswordClick = () => {
+    setIsResetClicked(true);
+    setTimeout(() => {
+      setCurrentPage('reset');
+      setIsResetClicked(false);
+    }, 500);
+  };
 
   const [passwordError, setPasswordError] = useState(false);
 
@@ -168,6 +178,11 @@ const LoginPage = () => {
   if (currentPage === 'main') {
     return <GenerateRecipesPage />;
   }
+  
+  // Reset Password page component
+  if (currentPage === 'reset') {
+    return <ResetPasswordPage setCurrentPage={setCurrentPage} />;
+  }
 
   const buttonBaseStyle = {
     width: '100%',
@@ -238,8 +253,8 @@ const LoginPage = () => {
       <div style={{
         textAlign: 'center',
         marginBottom: '40px',
-        transform: (isLoginClicked || isSignUpClicked) ? 'translateY(-20px)' : 'translateY(0)',
-        opacity: (isLoginClicked || isSignUpClicked) ? 0 : 1,
+        transform: (isLoginClicked || isSignUpClicked || isResetClicked) ? 'translateY(-20px)' : 'translateY(0)',
+        opacity: (isLoginClicked || isSignUpClicked || isResetClicked) ? 0 : 1,
         transition: 'all 0.5s ease',
         animation: 'float 6s ease-in-out infinite'
       }}>
@@ -285,7 +300,7 @@ const LoginPage = () => {
         gap: '16px',
         boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
         backdropFilter: 'blur(10px)',
-        transform: (isLoginClicked || isSignUpClicked) ? 'translateY(20px)' : 'translateY(0)',
+        transform: (isLoginClicked || isSignUpClicked || isResetClicked) ? 'translateY(20px)' : 'translateY(0)',
         transition: 'all 0.5s ease'
       }}>
         {showLoginForm ? (
@@ -339,6 +354,40 @@ const LoginPage = () => {
               }}
             />
           </div>
+          <button 
+            onClick={handleLoginClick}
+            style={{
+              ...buttonBaseStyle,
+              backgroundColor: isLoginClicked ? '#000000' : '#D3D3C7',
+              color: isLoginClicked ? '#FFFFFF' : '#000000',
+              transform: isLoginClicked ? 'scale(0.95)' : 'scale(1)',
+            }}
+          >
+            {loading ? (
+              <Loader2 className="animate-spin" size={20} />
+            ) : (
+              <span style={{ position: 'relative', zIndex: 1 }}>
+                Submit
+              </span>
+            )}
+          </button>
+          
+          {/* Forgot Password Link */}
+          <button 
+            onClick={handleResetPasswordClick}
+            style={{
+              backgroundColor: 'transparent',
+              border: 'none',
+              color: '#333',
+              fontSize: '14px',
+              cursor: 'pointer',
+              textDecoration: 'underline',
+              marginTop: '-8px',
+              padding: '4px'
+            }}
+          >
+            Forgot Password?
+          </button>
           </>
         ) : showSignUpForm ? (
           <>
@@ -433,91 +482,138 @@ const LoginPage = () => {
                 }}
               />
             </div>
+            
+            <button 
+              onClick={handleSignUpClick}
+              style={{
+                ...buttonBaseStyle,
+                backgroundColor: isSignUpClicked ? '#000000' : '#D3D3C7',
+                color: isSignUpClicked ? '#FFFFFF' : '#000000',
+                transform: isSignUpClicked ? 'scale(0.95)' : 'scale(1)',
+              }}
+            >
+              {loading ? (
+                <Loader2 className="animate-spin" size={20} />
+              ) : (
+                <span style={{ position: 'relative', zIndex: 1 }}>
+                  Create Account
+                </span>
+              )}
+            </button>
           </>
-        ) : null}
+        ) : (
+          <>
+            <button 
+              onClick={handleLoginClick}
+              onMouseEnter={() => setIsHovered('login')}
+              onMouseLeave={() => setIsHovered(null)}
+              style={{
+                ...buttonBaseStyle,
+                backgroundColor: isLoginClicked ? '#000000' : '#D3D3C7',
+                color: isLoginClicked ? '#FFFFFF' : '#000000',
+                transform: isLoginClicked 
+                  ? 'scale(0.95)' 
+                  : isHovered === 'login' 
+                    ? 'scale(1.10)' 
+                    : 'scale(1)',
+                boxShadow: isHovered === 'login' 
+                  ? '0 6px 20px rgba(0, 0, 0, 0.15)' 
+                  : '0 2px 10px rgba(0, 0, 0, 0.1)',
+              }}
+            >
+              {loading ? (
+                <Loader2 className="animate-spin" size={20} />
+              ) : (
+                <>
+                  <span style={{ position: 'relative', zIndex: 1 }}>Login</span>
+                  <ArrowRight size={20} />
+                </>
+              )}
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: isHovered === 'login' ? '0' : '-100%',
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                transform: 'translateY(-50%)',
+                transition: 'left 0.5s ease',
+              }}></div>
+            </button>
 
-        {!showSignUpForm && (
-          <button 
-            onClick={handleLoginClick}
-            onMouseEnter={() => setIsHovered('login')}
-            onMouseLeave={() => setIsHovered(null)}
-            style={{
-              ...buttonBaseStyle,
-              backgroundColor: isLoginClicked ? '#000000' : '#D3D3C7',
-              color: isLoginClicked ? '#FFFFFF' : '#000000',
-              transform: isLoginClicked 
-                ? 'scale(0.95)' 
-                : isHovered === 'login' 
-                  ? 'scale(1.10)' 
-                  : 'scale(1)',
-              boxShadow: isHovered === 'login' 
-                ? '0 6px 20px rgba(0, 0, 0, 0.15)' 
-                : '0 2px 10px rgba(0, 0, 0, 0.1)',
-            }}
-          >
-            {loading ? (
-              <Loader2 className="animate-spin" size={20} />
-            ) : (
+            <button 
+              onClick={handleSignUpClick}
+              onMouseEnter={() => setIsHovered('signup')}
+              onMouseLeave={() => setIsHovered(null)}
+              style={{
+                ...buttonBaseStyle,
+                backgroundColor: isSignUpClicked ? '#000000' : '#D3D3C7',
+                color: isSignUpClicked ? '#FFFFFF' : '#000000',
+                transform: isSignUpClicked 
+                  ? 'scale(0.95)' 
+                  : isHovered === 'signup' 
+                    ? 'scale(1.10)' 
+                    : 'scale(1)',
+                boxShadow: isHovered === 'signup' 
+                  ? '0 6px 20px rgba(0, 0, 0, 0.15)' 
+                  : '0 2px 10px rgba(0, 0, 0, 0.1)',
+              }}
+            >
+              {loading ? (
+                <Loader2 className="animate-spin" size={20} />
+              ) : (
+                <>
+                  <span style={{ position: 'relative', zIndex: 1 }}>Sign Up</span>
+                  <UserPlus size={20} />
+                </>
+              )}
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: isHovered === 'signup' ? '0' : '-100%',
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                transform: 'translateY(-50%)',
+                transition: 'left 0.5s ease',
+              }}></div>
+            </button>
+            
+            {/* Reset Password Button */}
+            <button 
+              onClick={handleResetPasswordClick}
+              onMouseEnter={() => setIsHovered('reset')}
+              onMouseLeave={() => setIsHovered(null)}
+              style={{
+                ...buttonBaseStyle,
+                backgroundColor: isResetClicked ? '#000000' : '#D3D3C7',
+                color: isResetClicked ? '#FFFFFF' : '#000000',
+                transform: isResetClicked 
+                  ? 'scale(0.95)' 
+                  : isHovered === 'reset' 
+                    ? 'scale(1.10)' 
+                    : 'scale(1)',
+                boxShadow: isHovered === 'reset' 
+                  ? '0 6px 20px rgba(0, 0, 0, 0.15)' 
+                  : '0 2px 10px rgba(0, 0, 0, 0.1)',
+              }}
+            >
               <>
-                <span style={{ position: 'relative', zIndex: 1 }}>
-                  {showLoginForm ? 'Submit' : 'Login'}
-                </span>
-                {!showLoginForm && <ArrowRight size={20} />}
+                <span style={{ position: 'relative', zIndex: 1 }}>Reset Password</span>
+                <RefreshCw size={20} />
               </>
-            )}
-            <div style={{
-              position: 'absolute',
-              top: '50%',
-              left: isHovered === 'login' ? '0' : '-100%',
-              width: '100%',
-              height: '100%',
-              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
-              transform: 'translateY(-50%)',
-              transition: 'left 0.5s ease',
-            }}></div>
-          </button>
-        )}
-
-        {!showLoginForm && (
-          <button 
-            onClick={handleSignUpClick}
-            onMouseEnter={() => setIsHovered('signup')}
-            onMouseLeave={() => setIsHovered(null)}
-            style={{
-              ...buttonBaseStyle,
-              backgroundColor: isSignUpClicked ? '#000000' : '#D3D3C7',
-              color: isSignUpClicked ? '#FFFFFF' : '#000000',
-              transform: isSignUpClicked 
-                ? 'scale(0.95)' 
-                : isHovered === 'signup' 
-                  ? 'scale(1.10)' 
-                  : 'scale(1)',
-              boxShadow: isHovered === 'signup' 
-                ? '0 6px 20px rgba(0, 0, 0, 0.15)' 
-                : '0 2px 10px rgba(0, 0, 0, 0.1)',
-            }}
-          >
-            {loading ? (
-              <Loader2 className="animate-spin" size={20} />
-            ) : (
-              <>
-                <span style={{ position: 'relative', zIndex: 1 }}>
-                  {showSignUpForm ? 'Create Account' : 'Sign Up'}
-                </span>
-                {!showSignUpForm && <UserPlus size={20} />}
-              </>
-            )}
-            <div style={{
-              position: 'absolute',
-              top: '50%',
-              left: isHovered === 'signup' ? '0' : '-100%',
-              width: '100%',
-              height: '100%',
-              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
-              transform: 'translateY(-50%)',
-              transition: 'left 0.5s ease',
-            }}></div>
-          </button>
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: isHovered === 'reset' ? '0' : '-100%',
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                transform: 'translateY(-50%)',
+                transition: 'left 0.5s ease',
+              }}></div>
+            </button>
+          </>
         )}
 
         {(showLoginForm || showSignUpForm) && (
