@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Camera, ChevronRight, User, Lock, Loader2, ArrowRight, Mail, UserPlus, RefreshCw } from 'lucide-react';
 import './LoginPage.css'
 import GenerateRecipesPage from './GenRecipesPage.tsx';
-import ResetPasswordPage from './ResetPasswordPage'; // Import the new ResetPasswordPage component
+import ResetPasswordPage from './ResetPasswordPage.tsx'; // Import the new ResetPasswordPage component
 import bannerPNG from './kitchenBanner.png';
 
 const LoginPage = () => {
