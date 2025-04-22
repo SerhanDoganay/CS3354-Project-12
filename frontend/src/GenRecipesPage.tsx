@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserCircle } from 'lucide-react'; // Add this import
+import { UserCircle, LogOut } from 'lucide-react'; 
 import logoImage from './accountLogo.png';
 import avocadoImage from './img/avocadoToast.jpg';
 import pastaImage from './img/gbChicken.jpg';
@@ -21,6 +21,37 @@ const colors = {
   buttonLight: '#D3D3C7',
 };
 
+// Add function to get cookie value
+const getCookieValue = (name) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+};
+
+// Add logout function
+const handleLogout = async () => {
+  try {
+    const sessionString = window.getCookieValue ? window.getCookieValue("ses") : getCookieValue("ses");
+    
+    const response = await fetch('/logout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ses: sessionString }),
+    });
+
+    if (response.ok) {
+      // Redirect to login page or refresh the page
+      window.location.href = '/login';
+    } else {
+      console.error('Logout failed');
+    }
+  } catch (error) {
+    console.error('Error during logout:', error);
+  }
+};
 
 const recipes = [
   {
@@ -81,39 +112,6 @@ const recipes = [
       'Toss the crispy chicken in the honey garlic sauce and garnish with green onions.'
     ]
   }
-  // ,
-  // {
-  //   title: 'Spicy Black Bean Tacos',
-  //   description: 'A flavorful and filling taco option with seasoned black beans, fresh salsa, and creamy avocado.',
-  //   image: blackBeanTacosImage,
-  //   instructions: [
-  //     'In a skillet, cook black beans with chili powder, cumin, and garlic until heated through.',
-  //     'Warm taco shells and fill with the black beans, salsa, and avocado slices.',
-  //     'Top with cilantro, a squeeze of lime juice, and a sprinkle of cheese if desired.'
-  //   ]
-  // }
-  // ,
-  // {
-  //   title: 'Chocolate Chip Banana Bread',
-  //   description: 'Moist banana bread with rich chocolate chips for a comforting and indulgent treat.',
-  //   image: bananaBreadImage,
-  //   instructions: [
-  //     'Preheat oven to 350°F (175°C) and grease a loaf pan.',
-  //     'In a bowl, mash bananas and mix with melted butter, sugar, egg, and vanilla.',
-  //     'Fold in flour, baking soda, and chocolate chips, then pour into the loaf pan and bake for 60 minutes or until golden.'
-  //   ]
-  // }
-  // ,
-  // {
-  //   title: 'Lemon Garlic Shrimp Skillet',
-  //   description: 'A quick and flavorful shrimp dish with lemon and garlic, perfect for a light dinner served over rice or pasta.',
-  //   image: shrimpSkilletImage,
-  //   instructions: [
-  //     'Heat olive oil in a skillet and sauté garlic until fragrant.',
-  //     'Add shrimp, season with salt and pepper, and cook until pink.',
-  //     'Drizzle with lemon juice and sprinkle with fresh parsley before serving.'
-  //   ]
-  // }
 ];
 
 const GenerateRecipesPage: React.FC = () => {
@@ -131,7 +129,7 @@ const GenerateRecipesPage: React.FC = () => {
 
   const handleButtonClick = () => {
     setClicked(true);
-    handleGenerateRecipes(); // Call your original function here
+    handleGenerateRecipes(); 
   };
 
   const handleLogoClick = () => {
@@ -188,8 +186,6 @@ const GenerateRecipesPage: React.FC = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-
-
   const getMessage = () => {
     if (hasGeneratedOnce) {
       return ingredients.length === 0 ? 
@@ -217,7 +213,7 @@ const GenerateRecipesPage: React.FC = () => {
     >
     <div className="p-10 h-screen w-screen flex flex-col items-center">
     
-      {/* Header with Title, Tagline, and Logo */}
+      {/* Header with Title, Tagline, Logo and Logout Button */}
       <div className="w-full flex justify-between items-center mb-4">
         <div>
           <h1 className="text-6xl font-serif" style={{ color: '#1A1A1A' }}>BetterChefAI</h1>
@@ -225,8 +221,23 @@ const GenerateRecipesPage: React.FC = () => {
             Turning Nothing, Into Something.
           </p>
         </div>
-        {/* Logo button with transparent background, hover, and click effect */}
-        <button
+        
+        <div className="flex items-center gap-4">
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 py-2 px-4 rounded-lg font-serif transition-all hover:scale-110 hover:shadow-md"
+            style={{
+              backgroundColor: colors.buttonBg,
+              color: '#FFE8D6',
+            }}
+          >
+            <LogOut size={18} />
+            <span>Logout</span>
+          </button>
+          
+          {/* Logo button */}
+          <button
             onClick={handleLogoClick}
             className={`p-0 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transform transition-transform duration-200 ${
               isLogoActive ? 'ring-[#B7B7A4]' : 'ring-transparent'
@@ -239,6 +250,7 @@ const GenerateRecipesPage: React.FC = () => {
           >
             <img src={logoImage} alt="Logo" className="w-16 h-16" />
           </button>
+        </div>
       </div>
 
 
@@ -262,7 +274,6 @@ const GenerateRecipesPage: React.FC = () => {
                   setIngredients(prev => [...prev, ingredient]);
                 }
               });
-              // Optionally trigger recipe generation after ingredients are added
               if (detectedIngredients.length > 0) {
                 setShowRecipes(false); // Reset recipes view
                 setHasGeneratedOnce(false); // Reset generation state
