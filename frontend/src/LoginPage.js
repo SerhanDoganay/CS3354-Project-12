@@ -42,6 +42,9 @@ const LoginPage = () => {
 			  if (data.valid) {
 			    setCurrentPage('main');
 			  }
+			  else {
+				  setShowLoginForm(true);
+			  }
 			});
 	    }
 		else {
