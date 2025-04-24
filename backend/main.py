@@ -76,8 +76,8 @@ async def get_ingredients(image: UploadFile = File(...)):
 def get_recipe(data: Recipe):
     vlm_instance = VLM()
     recipe = vlm_instance.get_recipe(data.ingredients)
-    print(recipe)
-    return {"recipe": recipe}
+    print(recipe[3])
+    return {"titles": recipe[0], "descriptions": recipe[1], "recipes": recipe[2]}
     
 @app.post("/validatesession")
 def validate_session(data: LogoutData):
