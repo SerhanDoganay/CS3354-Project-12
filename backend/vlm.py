@@ -7,12 +7,13 @@ import os
 # users can also manually add more ingredients
 
 ingredient_prompt = """Given this image, identify all the ingredients. Provide the ingredients in a list format. If this image does not contain food, respond with 'This image does not contain food.'"""
-recipe_prompt = """Given these ingredients, what is a recipe I can make? Give a short description of the food and the steps to make it."""
+recipe_prompt = """Given these ingredients, what is a recipe I can make? Give a short description of the food and the steps to make it. Make sure that the recipe does not contain any ingredients not provided (even if it is optional)"""
+
+API_KEY = "AIzaSyDz38dcPtjK40Dar3JqyTRpGrGhQBUfrp0"
+client = genai.Client(api_key=API_KEY)
 class VLM:
     def __init__(self):
-        API_KEY = "AIzaSyDz38dcPtjK40Dar3JqyTRpGrGhQBUfrp0"
-
-        self.client = genai.Client(api_key=API_KEY)
+        self.client = client
         
     def validate_image_path(self):
         if not self.image_path or not isinstance(self.image_path, str):

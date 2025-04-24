@@ -105,6 +105,7 @@ const GenerateRecipesPage: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [clicked, setClicked] = useState(false);
   const [isLogoActive, setIsLogoActive] = useState(false);
+  const [recipe, setRecipe] = useState(null);
   
   // Add logout function
   const handleLogout = async () => {
@@ -154,12 +155,34 @@ const GenerateRecipesPage: React.FC = () => {
     setShowRecipes(false);
   };
 
-  const handleGenerateRecipes = () => {
+  const endpoint = 'http://127.0.0.1:8000'; 
+
+async function getRecipe() {
+    try {
+      const res = await fetch(`${endpoint}/recipe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ingredients }),
+      });
+      const data = await res.json();
+      console.log(data.recipe); // ✅ actual result
+      return data.recipe;
+    } catch (err) {
+      console.error("Failed to fetch recipe:", err);
+    }
+  }
+  
+
+  const handleGenerateRecipes = async () => {
     if (ingredients.length > 0) {
       setShowRecipes(true);
       setHasGeneratedOnce(true);
+  
+      const output = await getRecipe(); 
+      setRecipe(output);               
     }
   };
+  
 
   const handleNextRecipe = () => {
     setCurrentRecipeIndex((currentRecipeIndex + 1) % (recipes.length-1));
@@ -331,199 +354,20 @@ const GenerateRecipesPage: React.FC = () => {
         </div>
 
         {/* Only display carousel if recipes are generated */}
-        {showRecipes ? (
-          <div className="flex-grow flex justify-center items-center w-full lg:w-3/5 overflow-hidden relative" style={{ marginLeft: '1rem' }}>
-            <button onClick={handlePrevRecipe} className="absolute left-[-0.01rem] p-2 rounded-full bg-gray-300 hover:bg-gray-400 transition-all z-10" 
-             style={{
-                backgroundColor: '#FFE8D6'
-              }}>
-              ◀
-            </button>
-
-            {/* Carousel Wrapper */}
-            <div
-              className="flex transition-transform duration-500 ease-out"
-              style={{
-                transform: `translateX(-${(currentRecipeIndex - 1) * 33.33}%)`,
-                width: '300%',
-              }}
-            >
-              {recipes.map((recipe, index) => (
-                <div key={index} className={`w-[28%] flex-shrink-0 px-4 transition-all duration-500 ${index === currentRecipeIndex ? 'scale-105' : 'scale-95'} ${index === currentRecipeIndex ? 'z-20' : 'z-10'}`}>
-                  <RecipeCard recipe={recipe} index={index} onViewRecipe={handleViewRecipe} toggleFavorite={toggleFavorite} isFavorite={favorites[index]} />
-                </div>
-              ))}
+        {showRecipes && recipe && (
+          <div className="flex flex-col items-center lg:items-start lg:w-2/5 p-6 rounded-lg shadow-lg" style={{ backgroundColor: colors.buttonBg }}>
+            <h2 className="text-2xl font-serif mb-4 text-center rounded-lg px-4 py-2" style={{ color: 'black', backgroundColor: '#B7B7A4' }}>
+              Generated Recipe
+            </h2>
+            <div className="flex flex-col items-center space-y-4">
+              
+              <p className="text-md font-serif mb-4" style={{ color: '#FFE8D6' }}>{recipe}</p>
+              <button onClick={() => handleViewRecipe(recipe)} className="py-2 px-4 rounded-lg text-lg font-serif transition-all hover:scale-110 hover:shadow-md" style={{ backgroundColor: '#B7B7A4' }}>
+                View Recipe
+              </button>
             </div>
-
-            <button onClick={handleNextRecipe} className="absolute right-[-0.01rem] p-2 rounded-full bg-gray-300 hover:bg-gray-400 transition-all z-10"
-            style={{
-              backgroundColor: '#FFE8D6'
-            }}>
-              ▶
-            </button>
           </div>
-        ) : (
-          <div className="flex justify-center items-center w-full h-full relative pt-60">
-          {/* Main Blob */}
-          <div className="floating-blob"></div>
-          <div className="floating-blob-support">
-            <p className="text-2xl font-serif text-center" style={{ color: 'black' }}>
-              {getMessage()}
-            </p>
-          </div>
-
-          {/* Additional Small Blobs */}
-          <div className="small-blob blob-1"></div>
-          <div className="small-blob blob-2"></div>
-          <div className="small-blob blob-3"></div>
-          <div className="small-blob blob-4"></div>
-          <div className="small-blob blob-5"></div>
-          <div className="small-blob blob-6"></div>
-
-          <style jsx>{`
-            /* Main Blob */
-
-            .floating-blob {
-              background-color: #6B705C;
-              width: 400px;
-              height: 350px;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              position: absolute;
-              animation: blob-animation 8s ease-in-out infinite;
-              box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
-              transform-origin: center;
-            }
-
-            .floating-blob-support {
-              background-color: #FFE8D6;
-              width: 300px;
-              height: 250px;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              position: absolute;
-              animation: blob-animation 8s ease-in-out infinite;
-              box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
-              transform-origin: center;
-            }
-
-            /* Main Blob Animation */
-            @keyframes blob-animation {
-              0%,
-              100% {
-                border-radius: 50% 55% 60% 55% / 55% 50% 55% 60%;
-                transform: translate(0, 0) scale(1);
-              }
-              25% {
-                border-radius: 55% 50% 60% 45% / 60% 55% 50% 45%;
-                transform: translate(-5px, -10px) scale(1.03);
-              }
-              50% {
-                border-radius: 60% 55% 50% 45% / 50% 55% 60% 55%;
-                transform: translate(10px, 5px) scale(0.97);
-              }
-              75% {
-                border-radius: 55% 60% 55% 50% / 55% 50% 60% 50%;
-                transform: translate(-10px, 5px) scale(1.02);
-              }
-            }
-
-            /* Small Blob Base Styles */
-            .small-blob {
-              position: absolute;
-              background-color: #6B705C;
-              opacity: 0.8;
-              animation: blob-animation-variant 8s ease-in-out infinite;
-            }
-
-            /* Individual Blob Positions, Sizes, and Animation Variants */
-            .blob-1 {
-              width: 86px;
-              height: 67px;
-              top: 140%;
-              left: 33%;
-              animation: blob-animation-variant-1 6s ease-in-out infinite;
-              border-radius: 55% 45% 60% 40% / 50% 60% 40% 55%;
-            }
-
-            .blob-2 {
-              width: 98px;
-              height: 138px;
-              top: 93%;
-              right: 66%;
-              animation: blob-animation-variant-2 7s ease-in-out infinite;
-              border-radius: 60% 50% 40% 60% / 55% 50% 45% 55%;
-            }
-
-            .blob-3 {
-              width: 50px;
-              height: 50px;
-              bottom: 39%;
-              left: 64%;
-              animation: blob-animation-variant-3 5s ease-in-out infinite;
-              border-radius: 45% 55% 60% 50% / 50% 60% 55% 45%;
-            }
-
-            .blob-4 {
-              width: 176px;
-              height: 90px;
-              bottom: 62%;
-              right: 30%;
-              animation: blob-animation-variant-4 6.5s ease-in-out infinite;
-              border-radius: 60% 55% 45% 50% / 55% 50% 60% 50%;
-            }
-
-            .blob-5 {
-              width: 70px;
-              height: 70px;
-              top: 28%;
-              right: 62%;
-              animation: blob-animation-variant-5 7.5s ease-in-out infinite;
-              border-radius: 55% 50% 60% 55% / 55% 60% 50% 50%;
-            }
-
-            .blob-6 {
-              width: 70px;
-              height: 98px;
-              top: 119%;
-              right: 31%;
-              animation: blob-animation-variant-5 7.5s ease-in-out infinite;
-              border-radius: 55% 50% 60% 55% / 55% 60% 50% 50%;
-            }
-
-            /* Animation Variants for Each Small Blob */
-            @keyframes blob-animation-variant-1 {
-              0%, 100% { transform: translate(0, 0) scale(1); }
-              50% { transform: translate(10px, -5px) scale(1.1); }
-            }
-
-            @keyframes blob-animation-variant-2 {
-              0%, 100% { transform: translate(0, 0) scale(1); }
-              50% { transform: translate(-8px, 6px) scale(0.95); }
-            }
-
-            @keyframes blob-animation-variant-3 {
-              0%, 100% { transform: translate(0, 0) scale(1); }
-              50% { transform: translate(5px, -5px) scale(1.05); }
-            }
-
-            @keyframes blob-animation-variant-4 {
-              0%, 100% { transform: translate(0, 0) scale(1); }
-              50% { transform: translate(-10px, 5px) scale(0.9); }
-            }
-
-            @keyframes blob-animation-variant-5 {
-              0%, 100% { transform: translate(0, 0) scale(1); }
-              50% { transform: translate(8px, -8px) scale(1.08); }
-            }
-          `}</style>
-        </div>
-
-
         )}
-        
       </div>
 
       {/* Recipe Modal */}
