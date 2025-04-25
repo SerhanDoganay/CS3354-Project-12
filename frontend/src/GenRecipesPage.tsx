@@ -92,13 +92,9 @@ const GenerateRecipesPage: React.FC = () => {
   const [clicked, setClicked] = useState(false);
   const [isLogoActive, setIsLogoActive] = useState(false);
   const [recipe, setRecipe] = useState(null);
-  const [savedRecipes, setSavedRecipes] = useState<typeof recipes>([]);
-
-  // Load saved recipes from localStorage on mount
-  useEffect(() => {
-    const stored = localStorage.getItem('savedRecipes');
-    if (stored) setSavedRecipes(JSON.parse(stored));
-  }, []);
+  const [savedRecipes, setSavedRecipes] = useState<typeof recipes>(() => {
+	const stored = localStorage.getItem('savedRecipes');
+  return stored ? JSON.parse(stored) : [];});
 
   // Persist saved recipes whenever they change
   useEffect(() => {
@@ -134,6 +130,14 @@ const GenerateRecipesPage: React.FC = () => {
     } catch (error) {
       console.error('Error during logout:', error);
     }
+  };
+  
+  // Handle show favorites
+  const handleFavorites = () => {
+    recipes = savedRecipes;
+    setRecipe(recipes);
+    setShowRecipes(true);
+    setHasGeneratedOnce(true);
   };
 
   const handleButtonClick = () => {
@@ -197,7 +201,7 @@ const GenerateRecipesPage: React.FC = () => {
   
 
   const handleNextRecipe = () => {
-    setCurrentRecipeIndex((currentRecipeIndex + 1) % (recipes.length-1));
+    setCurrentRecipeIndex((currentRecipeIndex + 1) % recipes.length);
   };
 
   const handlePrevRecipe = () => {
@@ -264,7 +268,19 @@ const GenerateRecipesPage: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-4">
-          {/* Logout Button */}
+		  {/* Favorites Button */}
+		  <button
+            onClick={handleFavorites}
+            className="flex items-center gap-2 py-2 px-4 rounded-lg font-serif transition-all hover:scale-110 hover:shadow-md"
+            style={{
+              backgroundColor: colors.buttonBg,
+              color: '#FFE8D6',
+            }}
+          >
+            <span>Favorites</span>
+          </button>
+		  
+		  {/* Logout Button */}		  
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 py-2 px-4 rounded-lg font-serif transition-all hover:scale-110 hover:shadow-md"
@@ -379,7 +395,7 @@ const GenerateRecipesPage: React.FC = () => {
             <div
               className="flex transition-transform duration-500 ease-out"
               style={{
-                transform: `translateX(-${(currentRecipeIndex - 1) * 33.33}%)`,
+                transform: `translateX(-${currentRecipeIndex == 0 ? 0 : ((currentRecipeIndex - 1) * 33.33)}%)`,
                 width: '300%',
               }}
             >

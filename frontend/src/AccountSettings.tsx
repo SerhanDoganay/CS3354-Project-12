@@ -444,17 +444,6 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ onBack }) => {
               </div>
             </div>
           ))}
-
-          {/* Favorites Button */}
-          <button style={{
-            ...buttonBaseStyle,
-            width: '100%',
-            marginTop: '16px',
-            justifyContent: 'center'
-          }}>
-            <Heart size={20} />
-            Favorites
-          </button>
         </div>
 
         {/* Action Buttons */}
