@@ -65,7 +65,7 @@ class AccountController:
         if validation_result != "Login Successful":
             return "ERROR: " + validation_result
     
-        if User.verify_email(email) is None:
+        if User.verify_email(email) is None or LoginUser.validate_login_id(email) != "Login Successful":
             return "ERROR: Invalid email format"
 
         if password != password2:
